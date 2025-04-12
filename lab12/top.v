@@ -1,24 +1,30 @@
 module top(
-    input sw, // w
-    output [9:0] led, // see IO table
-    input btnC, // clk
-    input btnU // reset
+    input sw,             // w
+    input btnC,           // clk
+    input btnU,           // reset
+    output [9:0] led      
 );
 
-onehot eq1(
-    .w(sw),
-    .clk(btnC),
-    .reset(btnU),
-    .one_hot_states(led[6:2]),
-    .z(led[0])
-);
+    wire z_onehot, z_binary;
+    wire [4:0] onehot_actual;
+    wire [2:0] binary_actual;
 
-binary eq2(
-    .w(sw),
-    .clk(btnC),
-    .reset(btnU),
-    .z(led[1]),
-    .state(led[9:7])
-);
+    onehot eq1(
+        .w(sw),
+        .clk(btnC),
+        .reset(btnU),
+        .one_hot_states(onehot_actual),
+        .z(z_onehot)
+    );
+
+    binary eq2(
+        .w(sw),
+        .clk(btnC),
+        .reset(btnU),
+        .state(binary_actual),
+        .z(z_binary)
+    );
+
+    assign led = {binary_actual, onehot_actual, z_binary, z_onehot};  
 
 endmodule
