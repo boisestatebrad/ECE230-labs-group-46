@@ -1,26 +1,37 @@
-module onehot(
+module binary(
     input w, clk, reset,
-    output z,
-    output [4:0] one_hot_states
+    output reg [2:0] state,
+    output reg z
 );
 
-    wire Anext, Bnext, Cnext, Dnext, Enext;
-    wire Astate, Bstate, Cstate, Dstate, Estate;
+    reg [2:0] next_state;
 
-    assign z = Estate | Cstate;
+    localparam A = 3'b000;
+    localparam B = 3'b001;
+    localparam C = 3'b010;
+    localparam D = 3'b011;
+    localparam E = 3'b100;
 
-    assign Anext = 0;
-    assign Bnext = (Astate & ~w) | (Dstate & ~w) | (Estate & ~w);
-    assign Cnext = (Bstate & ~w) | (Cstate & ~w); 
-    assign Dnext = (Astate & w) | (Bstate & w) | (Cstate & w);
-    assign Enext = (Dstate & w) | (Estate & w);
+    always @(*) begin
+        case (state)
+            A: next_state = w ? D : B;
+            B: next_state = w ? D : C;
+            C: next_state = w ? D : C;
+            D: next_state = w ? E : B;
+            E: next_state = w ? E : B;
+            default: next_state = A;
+        endcase
+    end
 
-    assign one_hot_states = {Estate, Dstate, Cstate, Bstate, Astate};
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            state <= A;
+        else
+            state <= next_state;
+    end
 
-    dff Adff(.Default(1'b1), .D(Anext), .clk(clk), .reset(reset), .Q(Astate));
-    dff Bdff(.Default(1'b0), .D(Bnext), .clk(clk), .reset(reset), .Q(Bstate));
-    dff Cdff(.Default(1'b0), .D(Cnext), .clk(clk), .reset(reset), .Q(Cstate));
-    dff Ddff(.Default(1'b0), .D(Dnext), .clk(clk), .reset(reset), .Q(Dstate));
-    dff Edff(.Default(1'b0), .D(Enext), .clk(clk), .reset(reset), .Q(Estate));
+    always @(*) begin
+        z = (state == C) || (state == E);
+    end
 
 endmodule
