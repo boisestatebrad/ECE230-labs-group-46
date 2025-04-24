@@ -10,8 +10,14 @@ module top
     output [3:0] an, // 7seg anodes
     output [6:0] seg // 7seg segments
 );
-  wire x;
-  wire [3:0] anodeout, AplusB_out, AminusB_out;
+
+    wire [3:0] A, B;
+
+    assign A = sw[3:0];
+    assign B = sw[7:4];
+  
+    wire x;
+    wire [3:0] anodeout, AplusB_out, AminusB_out;
     
     clock_div one (
         .clock(clk),
@@ -26,23 +32,22 @@ module top
     );
     
     math_block three(
-        .A(sw[3:0]),
-        .B(sw[7:4]),
+        .A(A),
+        .B(B),
         .AplusB(AplusB_out),
         .AminusB(AminusB_out)
     );
     
     seven_seg_decoder four(
         .anode(anodeout),
-        .A(sw[3:0]),
-        .B(sw[7:4]),
-        .AplusB(AplusB_out),
-        .AminusB(AminusB_out),
-        .segs(seg[6:0])
+        .A(A),
+        .B(B),
+        .AplusB(AplusB),
+        .AminusB(AminusB),
+        .segs(seg)
         );
-       
-       assign anodeout = an[3:0];
         
+        assign anodeout = an;
     
     
     // Instantiate the clock divider...
