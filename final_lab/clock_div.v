@@ -8,31 +8,23 @@ module clock_div
     output reg div_clock
 );
 
-    wire [DIVIDE_BY-1:0] dff_out;
-    wire [DIVIDE_BY-1:0] dff_in;
-
-    assign dff_in[0] = ~dff_out[0];
-
-    assign dff_in[DIVIDE_BY-1:1] = dff_out[DIVIDE_BY-2:0];
-
-    always @ (posedge clock or posedge reset) begin
-        if (reset)
-            div_clock <= 1'b0;
-        else
-            div_clock <= dff_out[DIVIDE_BY-1];
-    end
-
+   
+    wire [DIVIDE_BY-1:0] Q;  
+   
     genvar i;
     generate
-        for (i = 0; i < DIVIDE_BY; i = i + 1) begin : divider
-            dff u_dff (
+        for(i = 0; i < DIVIDE_BY; i = i + 1) begin : gen_clkDff
+            dff clkDff(
                 .reset(reset),
-                .clock(clock),
-                .D(dff_in[i]),
-                .Q(dff_out[i]),
-                .NotQ() 
-            );
+                .D(~Q[i]),
+                .Q(Q[i]),
+                .clock(i == 0 ? clock : Q[i-1])
+             );
         end
     endgenerate
+    always@(posedge clock) begin
+        div_clock <= Q[DIVIDE_BY-1];
+    end
+
 
 endmodule
