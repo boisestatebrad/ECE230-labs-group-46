@@ -2,10 +2,8 @@ module dff(
     input reset,
     input clock,
     input D,
-    output reg Q,
-    output NotQ
+    output reg Q
 );
-    assign NotQ = ~Q;
 
     always @(posedge reset, posedge clock) begin
         if (reset) begin
